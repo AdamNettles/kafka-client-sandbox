@@ -1,0 +1,38 @@
+plugins {
+    id 'groovy'
+    id 'org.springframework.boot' version '2.2.2.RELEASE'
+    id 'idea'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id "com.commercehub.gradle.plugin.avro" version "0.9.0"
+
+}
+
+group 'org.adamnettles'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url "http://packages.confluent.io/maven/" }
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    compile 'org.springframework.kafka:spring-kafka:2.4.0.RELEASE'
+
+    compile 'io.confluent:kafka-avro-serializer:5.2.+'
+    compile "org.apache.avro:avro:1.9.+"
+    compile 'org.apache.kafka:kafka-clients:2.4.+'
+    compile 'org.apache.kafka:kafka_2.11'
+
+
+}
+
+wrapper {
+    gradleVersion = '5.6'
+}
+
