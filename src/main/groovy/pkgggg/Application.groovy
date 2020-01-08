@@ -36,14 +36,14 @@ class Application implements CommandLineRunner {
                     )
             ]
     )
-    void listen(ConsumerRecord<?, ?> cr) throws Exception {
+    void listen(Evolution evolution) throws Exception {
         logger.info('message found');
-        logger.info(cr.toString());
+        logger.info(evolution.toString());
     }
 
     @Override
     void run(String... args) throws Exception {
-        logger.info('this ran...')
+        logger.info('Pushing messages...')
         Evolution evo = new Evolution('namey', 999, 9.99)
         ProducerRecord<String, Evolution> record = new ProducerRecord<String, Evolution>(topic, '999', evo)
         Evolution evo2 = new Evolution('namey', 1000, 10.00)

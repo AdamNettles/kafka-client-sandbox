@@ -6,8 +6,7 @@ spring.kafka:
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
     schema-registry-url: http://localhost:8081
-    use-specific-avro-reader: true
-    topic: test-topic2
+    topic: test-topic
   producer:
     bootstrap-servers: localhost:9092
     key-serializer:  org.apache.kafka.common.serialization.StringSerializer

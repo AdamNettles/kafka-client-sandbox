@@ -14,11 +14,13 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.annotation.EnableKafka
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
+import org.springframework.kafka.config.KafkaStreamsConfiguration
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.listener.KafkaListenerErrorHandler
@@ -37,8 +39,7 @@ class KafkaConfig {
     String autoOffsetReset
     @Value('${spring.kafka.consumer.schema-registry-url}')
     String registry
-    @Value('${spring.kafka.consumer.use-specific-avro-reader}')
-    String specific
+
     @Value('${spring.kafka.consumer.bootstrap-servers}')
     String bootstraps
     @Value('${spring.kafka.consumer.key-deserializer}')
@@ -58,18 +59,11 @@ class KafkaConfig {
         consProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset)
         consProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer)
         consProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer)
-        consProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, registry)
-        consProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, specific)
-        SchemaRegistryClient schemaRegistryClient =
-                new CachedSchemaRegistryClient(registry, 1000)
-        ErrorHandlingDeserializer2 ehd2 =
-                new ErrorHandlingDeserializer2(
-                        new KafkaAvroDeserializer(schemaRegistryClient, consProps)
-                )
+        AvroDeserializer evolutionAvroDeserializer = new AvroDeserializer(registry, consProps)
         return new DefaultKafkaConsumerFactory<>(
                 consProps,
                 new StringDeserializer(),
-                ehd2
+                evolutionAvroDeserializer
         )
     }
 
@@ -90,10 +84,10 @@ class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(KafkaListenerErrorHandler customErrorHandler) {
-
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(ContainerErrorHandler containerErrorHandler) {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory())
+        factory.setErrorHandler(containerErrorHandler)
         return factory
     }
 
