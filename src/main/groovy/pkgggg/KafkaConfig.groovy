@@ -1,15 +1,19 @@
 package pkgggg
 
+import com.landoop.Evolution
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
+import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.serialization.IntegerSerializer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
@@ -23,9 +27,6 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.config.KafkaStreamsConfiguration
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
-import org.springframework.kafka.listener.KafkaListenerErrorHandler
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer2
 
 @EnableKafka
 @Configuration
@@ -68,7 +69,23 @@ class KafkaConfig {
     }
 
     @Bean
-    Producer<String, Object> producer() {
+    Producer<String, String> outputProducer() {
+        Map<String, Object> prodProps = new HashMap<>()
+        prodProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstraps)
+        prodProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer)
+        prodProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer)
+//        prodProps.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, registry)
+//        SchemaRegistryClient schemaRegistryClient =
+//                new CachedSchemaRegistryClient(registry, 1000)
+        return new KafkaProducer<String, String>(
+                prodProps,
+                new StringSerializer(),
+                new StringSerializer()
+        )
+    }
+
+    @Bean
+    Producer<String, Object> avroProducer() {
         Map<String, Object> prodProps = new HashMap<>()
         prodProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstraps)
         prodProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer)
@@ -84,7 +101,18 @@ class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(ContainerErrorHandler containerErrorHandler) {
+    Consumer<String, String> outputConsumer() {
+        Properties consProps = new Properties()
+        consProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstraps)
+        consProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId)
+        consProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset)
+        consProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, 'org.apache.kafka.common.serialization.StringDeserializer')
+        consProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, 'org.apache.kafka.common.serialization.StringDeserializer')
+        return new KafkaConsumer(consProps, new StringDeserializer(),new StringDeserializer())
+    }
+
+    @Bean
+    ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(ContainerErrorHandler containerErrorHandler) {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory())
         factory.setErrorHandler(containerErrorHandler)

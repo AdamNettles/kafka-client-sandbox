@@ -1,7 +1,7 @@
 package pkgggg
 
 import com.landoop.Evolution
-import org.apache.kafka.clients.consumer.ConsumerRecord
+import groovy.util.logging.Slf4j
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
@@ -14,46 +14,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.annotation.PartitionOffset
 import org.springframework.kafka.annotation.TopicPartition
-import org.springframework.kafka.listener.KafkaListenerErrorHandler
+import org.springframework.kafka.core.ConsumerFactory
 
+import javax.annotation.PreDestroy
+
+@Slf4j
 @SpringBootApplication
-class Application implements CommandLineRunner {
+class Application {
 
-    public static Logger logger = LoggerFactory.getLogger(Application.class);
-
-    @Value('${spring.kafka.consumer.topic}')
-    String topic
-
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SpringApplication.run(Application.class, args)
     }
-
-    @KafkaListener(
-            topicPartitions = [
-                    @TopicPartition(
-                            topic = '${spring.kafka.consumer.topic}',
-                            partitionOffsets = @PartitionOffset(partition = "0", initialOffset = "0")
-                    )
-            ]
-    )
-    void listen(Evolution evolution) throws Exception {
-        logger.info('message found');
-        logger.info(evolution.toString());
-    }
-
-    @Override
-    void run(String... args) throws Exception {
-        logger.info('Pushing messages...')
-        Evolution evo = new Evolution('namey', 999, 9.99)
-        ProducerRecord<String, Evolution> record = new ProducerRecord<String, Evolution>(topic, '999', evo)
-        Evolution evo2 = new Evolution('namey', 1000, 10.00)
-        ProducerRecord<String, Evolution> record2 = new ProducerRecord<String, Evolution>(topic, '1000', evo2)
-        producer.send(record)
-        producer.send(record2)
-    }
-
-    @Autowired
-    Producer producer
-
 
 }

@@ -41,14 +41,18 @@ class ContainerErrorHandler implements ContainerAwareErrorHandler {
     @Override
     void handle(Exception thrownException, List<ConsumerRecord<?, ?>> records, Consumer<?, ?> consumer, MessageListenerContainer container) {
         log.error('ContainerErrorHandler 4')
-        byte[] deserializerExceptionBytes = thrownException.cause.failedMessage.headers.get('springDeserializerExceptionValue')
-        if(deserializerExceptionBytes != null) {
-            DeserializationException dse = toObject(deserializerExceptionBytes) as DeserializationException
-            Throwable rootCause = getRootCause(dse)
-            log.error('Root cause ' + rootCause.message)
-            if(rootCause.message == 'Unknown magic byte!') {
-                log.error('The message likely was not produced by an avro producer following schema registry')
+        if(thrownException.cause.hasProperty('failedMessage')){
+            byte[] deserializerExceptionBytes = thrownException.cause.failedMessage.headers.get('springDeserializerExceptionValue')
+            if(deserializerExceptionBytes != null) {
+                DeserializationException dse = toObject(deserializerExceptionBytes) as DeserializationException
+                Throwable rootCause = getRootCause(dse)
+                log.error('Root cause ' + rootCause.message)
+                if(rootCause.message == 'Unknown magic byte!') {
+                    log.error('The message likely was not produced by an avro producer following schema registry')
+                }
             }
+        } else {
+            log.error(thrownException.toString())
         }
 
     }

@@ -1,15 +1,15 @@
 spring.kafka:
+  test-field: value
   input-topic: inputTopic
   output-topic: outputTopic
   consumer:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers:  ${spring.embedded.kafka.brokers}
     group-id: foo5
     auto-offset-reset: earliest
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
     schema-registry-url: http://localhost:8081
   producer:
-    bootstrap-servers: localhost:9092
-    key-serializer:  org.apache.kafka.common.serialization.StringSerializer
+    bootstrap-servers:  ${spring.embedded.kafka.brokers}
+    key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
     value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
