@@ -44,7 +44,7 @@ class TestSpec extends Specification {
 
     @Shared
     @ClassRule
-    EmbeddedKafkaRule embeddedKafkaRule = new EmbeddedKafkaRule(1, true, 1, INPUT_TOPIC, OUTPUT_TOPIC)
+    EmbeddedKafkaRule embeddedKafkaRule = new EmbeddedKafkaRule(1, true, 1, INPUT_TOPIC, OUTPUT_TOPIC, INPUT_TOPIC+'-dummy')
 
     /**
      * For now, this Test requires the SR to be up and running from the docker-compose.yml
@@ -53,7 +53,7 @@ class TestSpec extends Specification {
     def 'test it'() {
         given:
         Evolution evo = new Evolution('namey', 999, 9.99)
-        ProducerRecord<String, Evolution> record = new ProducerRecord<String, Evolution>(INPUT_TOPIC, '999', evo)
+        ProducerRecord<String, Evolution> record = new ProducerRecord<String, Evolution>(INPUT_TOPIC+'-dummy', '999', evo)
         URL url = new URL('http://localhost:8001/#/cluster/default/schema/test-topic-value/version/latest')
         HttpURLConnection con = (HttpURLConnection) url.openConnection()
         con.setRequestMethod("GET")

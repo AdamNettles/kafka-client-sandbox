@@ -91,8 +91,8 @@ class KafkaConfig {
         prodProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer)
         prodProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer)
         prodProps.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, registry)
-        SchemaRegistryClient schemaRegistryClient =
-                new CachedSchemaRegistryClient(registry, 1000)
+        prodProps.put('auto.register.schemas', false)
+        SchemaRegistryClient schemaRegistryClient = new CachedSchemaRegistryClientEx(registry, 100)
         return new KafkaProducer<String, Object>(
                 prodProps,
                 new StringSerializer(),

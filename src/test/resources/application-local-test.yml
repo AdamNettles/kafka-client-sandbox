@@ -1,6 +1,6 @@
 spring.kafka:
   test-field: value
-  input-topic: inputTopic
+  input-topic: inputTopic-dummy
   output-topic: outputTopic
   consumer:
     bootstrap-servers:  ${spring.embedded.kafka.brokers}
